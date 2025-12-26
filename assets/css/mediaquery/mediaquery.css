@@ -1,0 +1,12 @@
+@media screen and (min-width: 991.99px) {
+    .banner {
+        height: 100vh;
+    }
+}
+
+@media screen and (min-width: 574.99px) {
+    h1 {
+        font-size: 6.667vw;
+        letter-spacing: -0.27vw;
+    }
+}
