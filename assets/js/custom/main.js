@@ -172,3 +172,186 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Rotating Text Animation - Use Anywhere End Here
+
+// Dynamic Dropdown Menu Animation
+
+$(function () {
+  const $dropdowns = $(".nav-item.dropdown");
+  
+  // Initially prepare list items for animation but keep them in document flow
+  // so that ul.dropdown-menu correctly calculates its full height for scaleY
+  $(".dropdown-menu li").css({
+    opacity: 0,
+    transform: "translateY(15px)"
+  });
+
+  $dropdowns.each(function () {
+    const $dropdown = $(this);
+    const $items = $dropdown.find(".dropdown-menu li");
+    let hoverTimeout;
+
+    function openMenu() {
+      clearTimeout(hoverTimeout);
+      
+      // Reset items state
+      $items.stop(true, true).css({
+        opacity: 0,
+        transform: "translateY(15px)"
+      });
+      
+      // Delay revealing items until the ul scaleY animation is partially done
+      hoverTimeout = setTimeout(() => {
+        $items.each(function (index) {
+          $(this).delay(index * 80).animate(
+            { opacity: 1 }, 
+            {
+              duration: 400,
+              easing: "swing",
+              step: function (now) {
+                // Animate Y axis dynamically alongside opacity
+                const y = 15 * (1 - now);
+                $(this).css("transform", `translateY(${y}px)`);
+              }
+            }
+          );
+        });
+      }, 350);
+    }
+
+    function closeMenu() {
+      clearTimeout(hoverTimeout);
+      
+      // Reset items
+      $items.stop(true, true).animate(
+        { opacity: 0 }, 
+        {
+          duration: 200,
+          step: function (now) {
+            const y = 15 * (1 - now);
+            $(this).css("transform", `translateY(${y}px)`);
+          }
+        }
+      );
+    }
+
+    // Handle desktop hover interactions
+    $dropdown.hover(
+      function () {
+        if (window.innerWidth >= 992) openMenu();
+      },
+      function () {
+        if (window.innerWidth >= 992) closeMenu();
+      }
+    );
+
+    // Handle touch interactions via Bootstrap events
+    $dropdown.on('show.bs.dropdown', function () {
+      openMenu();
+    });
+
+    $dropdown.on('hide.bs.dropdown', function () {
+      closeMenu();
+    });
+  });
+
+  // Toggle active/not-active for custom hamburger animation
+  const offcanvasElement = document.getElementById('navbarSupportedContent');
+  if (offcanvasElement) {
+    offcanvasElement.addEventListener('show.bs.offcanvas', function () {
+      $('.navbar-toggler.custom-toggler').removeClass('not-active').addClass('active');
+    });
+    offcanvasElement.addEventListener('hide.bs.offcanvas', function () {
+      $('.navbar-toggler.custom-toggler').removeClass('active').addClass('not-active');
+    });
+  }
+
+  // --- E-commerce Functionalities ---
+
+  // 1. Search Functionality
+  $('#searchForm').on('submit', function (e) {
+    e.preventDefault();
+    const query = $('#searchInput').val().trim();
+    if (query) {
+      console.log('Searching for:', query);
+      // For demonstration, just close modal and clear input
+      const searchModal = bootstrap.Modal.getInstance(document.getElementById('searchModal'));
+      if (searchModal) searchModal.hide();
+      $('#searchInput').val('');
+      // Show dummy toast or alert
+      alert('Searching for: ' + query);
+    }
+  });
+
+  // 2. Login Functionality
+  $('#loginForm').on('submit', function (e) {
+    e.preventDefault();
+    const email = $('#loginEmail').val();
+    const password = $('#loginPassword').val();
+    if (email && password) {
+      console.log('Logging in user:', email);
+      // Close modal on successful simulated login
+      const loginModal = bootstrap.Modal.getInstance(document.getElementById('loginModal'));
+      if (loginModal) loginModal.hide();
+      $('#loginEmail').val('');
+      $('#loginPassword').val('');
+      alert('Successfully logged in as ' + email);
+    }
+  });
+
+  // 3. Wishlist Functionality
+  let wishlistCount = 0;
+  
+  // Example function to add item to wishlist (can be called from anywhere)
+  window.addToWishlist = function(item) {
+    wishlistCount++;
+    $('.wishlist-count').text(wishlistCount).removeClass('d-none');
+    
+    $('#emptyWishlistMsg').hide();
+    
+    const wishlistItemHtml = `
+      <div class="d-flex align-items-center justify-content-between border border-secondary p-2 rounded wishlist-item">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-secondary bg-opacity-25 rounded d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+            <img src="assets/images/favourite.svg" alt="Product" style="width: 24px; filter: invert(0.5);" />
+          </div>
+          <div>
+            <h6 class="text-white mb-0">${item.name || 'Sample Product'}</h6>
+            <small class="text-yellow">${item.price || '$99.00'}</small>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-outline-danger remove-wishlist-item border-0">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    `;
+    
+    $('#wishlistItems').append(wishlistItemHtml);
+  };
+
+  // Handle removing items from wishlist
+  $('#wishlistItems').on('click', '.remove-wishlist-item', function() {
+    $(this).closest('.wishlist-item').remove();
+    wishlistCount--;
+    if (wishlistCount <= 0) {
+      wishlistCount = 0;
+      $('.wishlist-count').addClass('d-none');
+      $('#emptyWishlistMsg').show();
+    } else {
+      $('.wishlist-count').text(wishlistCount);
+    }
+  });
+
+  // Automatically add a sample product to wishlist for demonstration when the page loads (Optional)
+  // setTimeout(() => { addToWishlist({ name: 'Modern Chair', price: '$120.00' }); }, 1500);
+
+  // Close search modal when clicking outside the content
+  $('#searchModal').on('click', function (e) {
+    if (e.target === this) {
+      const modalInstance = bootstrap.Modal.getInstance(this);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+    }
+  });
+
+});
